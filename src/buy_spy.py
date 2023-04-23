@@ -3,7 +3,7 @@ from typing import Dict, Any
 from injector import inject, Injector
 
 from src.config import LocalModule, AwsModule
-from src.api import TastytradeApi
+from src.tastytrade_api import TastytradeApi
 
 
 class Main:
