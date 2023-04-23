@@ -12,7 +12,7 @@ from constructs import Construct
 
 class MatchProcessorStack(Stack):
     def __init__(self, scope: Construct):
-        super().__init__(scope, 'tastytrade-bot')
+        super().__init__(scope, 'tastytrade-automation')
 
         buy_spy = create_function(
             self,
