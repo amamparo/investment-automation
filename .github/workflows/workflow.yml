@@ -1,0 +1,38 @@
+name: Deploy
+concurrency:
+  group: tastytrade-bot
+  cancel-in-progress: true
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Setup pipenv
+        run: |
+          pip install pipenv --upgrade
+          pipenv --python 3.9
+          pipenv install -d
+      - name: Use node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install AWS CDK
+        run: |
+          npm i -g aws-cdk
+      - name: Deploy
+        run: |
+          AWS_DEFAULT_REGION="us-east-1" \
+          AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+          AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+          cdk deploy --require-approval never --verbose
