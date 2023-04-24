@@ -97,8 +97,6 @@ class TastytradeAutomationStack(Stack):
         )
 
 
-
-
 def allow(actions: List[str], resources: List[str]) -> PolicyStatement:
     return PolicyStatement(
         effect=Effect.ALLOW,
