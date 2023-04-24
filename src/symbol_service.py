@@ -24,6 +24,7 @@ class SymbolService:
                 if not result['pagination']['current-item-count']:
                     return
                 page_offset += 1
+                result = self.__get(page_offset)
 
     def __get(self, page_offset: int) -> dict:
         return self.__api.get('/instruments/equities/active',
