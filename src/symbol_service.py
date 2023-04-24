@@ -14,13 +14,10 @@ class SymbolService:
         page_offset = 0
         while True:
             result = self.__api.get('/instruments/equities/active', {'page-offset': page_offset})
-            symbols = [
-                x['symbol'] for x in result['data']['items']
-                if 'option-tick-sizes' in x and not x['is-options-closing-only'] and not x['is-illiquid']
-            ]
-            for symbol in symbols:
-                yield symbol
-            pagination = result['pagination']
-            if not pagination['current-item-count']:
+            for item in result['data']['items']:
+                if 'option-tick-sizes' not in item or item['is-options-closing-only'] or item['is-illiquid']:
+                    pass
+                yield item['symbol']
+            if not result['pagination']['current-item-count']:
                 return
             page_offset += 1
