@@ -51,6 +51,8 @@ class TastytradeAutomationStack(Stack):
             'enqueue-underlyings-task',
             cluster=cluster,
             schedule=Schedule.cron(week_day='MON-FRI', hour='13', minute='0'),
+            cpu=256,
+            memory_limit_mib=512,
             scheduled_fargate_task_image_options=ScheduledFargateTaskImageOptions(
                 image=container_image,
                 command=['python', '-m', 'src.enqueue_underlyings'],
@@ -70,6 +72,8 @@ class TastytradeAutomationStack(Stack):
             self,
             'process-underlyings-task',
             cluster=cluster,
+            cpu=256,
+            memory_limit_mib=512,
             queue=underlyings_queue,
             image=container_image,
             command=['python', '-m', 'src.process_underlyings'],
