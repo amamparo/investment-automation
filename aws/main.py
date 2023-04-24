@@ -51,7 +51,6 @@ class TastytradeAutomationStack(Stack):
             'enqueue-underlyings-task',
             cluster=cluster,
             schedule=Schedule.cron(week_day='MON-FRI', hour='13', minute='0'),
-            desired_task_count=0,
             scheduled_fargate_task_image_options=ScheduledFargateTaskImageOptions(
                 image=container_image,
                 command=['python', '-m', 'src.enqueue_underlyings'],
