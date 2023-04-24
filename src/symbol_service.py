@@ -16,7 +16,7 @@ class SymbolService:
             result = self.__api.get('/instruments/equities/active', {'page-offset': page_offset})
             for item in result['data']['items']:
                 if 'option-tick-sizes' not in item or item['is-options-closing-only'] or item['is-illiquid']:
-                    pass
+                    continue
                 yield item['symbol']
             if not result['pagination']['current-item-count']:
                 return
