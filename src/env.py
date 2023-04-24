@@ -1,64 +1,15 @@
-import json
-from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-import boto3
 from dotenv import load_dotenv
 from os import environ
 
 load_dotenv()
 
 
-class Environment(ABC):
-    @property
-    def api_base_url(self) -> str:
-        return environ.get('API_BASE_URL')
-
-    @property
-    @abstractmethod
-    def login(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def password(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def account(self) -> str:
-        pass
-
-
-class LocalEnvironment(Environment):
-    @property
-    def login(self) -> str:
-        return environ.get('LOGIN')
-
-    @property
-    def password(self) -> str:
-        return environ.get('PASSWORD')
-
-    @property
-    def account(self) -> str:
-        return environ.get('ACCOUNT')
-
-
-class AwsEnvironment(Environment):
-    def __init__(self):
-        self.__secret: dict = json.loads(
-            boto3.client('secretsmanager')
-            .get_secret_value(SecretId=environ.get('SECRET_ID'))
-            .get('SecretString')
-        )
-
-    @property
-    def login(self) -> str:
-        return self.__secret.get('LOGIN')
-
-    @property
-    def password(self) -> str:
-        return self.__secret.get('PASSWORD')
-
-    @property
-    def account(self) -> str:
-        return self.__secret.get('ACCOUNT')
+@dataclass
+class Environment:
+    api_base_url: str = environ.get('API_BASE_URL')
+    login: str = environ.get('LOGIN')
+    password: str = environ.get('PASSWORD')
+    account: str = environ.get('ACCOUNT')
+    underlyings_queue_url: str = environ.get('UNDERLYINGS_QUEUE_URL')

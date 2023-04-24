@@ -5,5 +5,5 @@ install:
 deploy:
 	cdk deploy --require-approval never
 
-local:
-	pipenv run python -m src.buy_spy
+enqueue_underlyings:
+	pipenv run python -m src.enqueue_underlyings

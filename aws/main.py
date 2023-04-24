@@ -1,72 +1,80 @@
-from dataclasses import dataclass
+from functools import reduce
 from os import getcwd
 from typing import List, Dict, cast
 
-from aws_cdk import Stack, App, Duration
+from aws_cdk import Stack, App, Duration, Environment
+from aws_cdk.aws_applicationautoscaling import Schedule
 from aws_cdk.aws_ecr_assets import Platform
-from aws_cdk.aws_iam import Role, ServicePrincipal, ManagedPolicy, PolicyDocument, PolicyStatement, Effect
-from aws_cdk.aws_lambda import Function, DockerImageFunction, DockerImageCode
-from aws_cdk.aws_logs import RetentionDays
+from aws_cdk.aws_ecs import Cluster, ContainerImage, Secret as EcsSecret
+from aws_cdk.aws_ecs_patterns import ScheduledFargateTask, ScheduledFargateTaskImageOptions
+from aws_cdk.aws_iam import PolicyStatement, Effect
+from aws_cdk.aws_secretsmanager import Secret
+from aws_cdk.aws_sqs import Queue
 from constructs import Construct
 
+from dotenv import load_dotenv
+from os import environ
 
-class MatchProcessorStack(Stack):
+load_dotenv()
+
+API_BASE_URL: str = 'https://api.tastyworks.com'
+
+
+class TastytradeAutomationStack(Stack):
     def __init__(self, scope: Construct):
-        super().__init__(scope, 'tastytrade-automation')
+        super().__init__(scope, 'tastytrade-automation',
+                         env=Environment(account=environ.get('AWS_REGION'), region=environ.get('AWS_DEFAULT_REGION')))
 
-        buy_spy = create_function(
+        container_image = ContainerImage.from_asset(directory=getcwd(), platform=cast(Platform, Platform.LINUX_AMD64))
+
+        cluster = Cluster(self, 'cluster', cluster_name='tastytrade-automation')
+
+        secret = Secret(self, 'secret', secret_name='tastytrade-automation-environment')
+
+        secrets: Dict[str, EcsSecret] = reduce(
+            lambda agg, key: {**agg, **{key: EcsSecret.from_secrets_manager(secret, key)}},
+            ['LOGIN', 'PASSWORD', 'ACCOUNT'],
+            {}
+        )
+
+        underlyings_queue = Queue(
             self,
-            name='buy-spy',
-            cmd='src.buy_spy.lambda_handler',
-            env={},
-            memory_size=256,
-            reserved_concurrent_executions=100
+            'underlyings-queue',
+            retention_period=Duration.hours(1),
+            visibility_timeout=Duration.minutes(15),
+            receive_message_wait_time=Duration.seconds(20)
+        )
+
+        enqueue_underlyings_task = ScheduledFargateTask(
+            self,
+            'enqueue-underlyings-task',
+            cluster=cluster,
+            schedule=Schedule.cron(week_day='MON-FRI', hour='13', minute='0'),
+            scheduled_fargate_task_image_options=ScheduledFargateTaskImageOptions(
+                image=container_image,
+                command=['python', '-m', 'src.enqueue_underlyings'],
+                environment={
+                    'API_BASE_URL': API_BASE_URL,
+                    'UNDERLYINGS_QUEUE_URL': underlyings_queue.queue_url
+                },
+                secrets=secrets
+            )
+        )
+
+        enqueue_underlyings_task.task_definition.add_to_task_role_policy(
+            allow(['sqs:SendMessage*'], [underlyings_queue.queue_arn])
         )
 
 
-@dataclass
-class Allow:
-    actions: List[str]
-    resources: List[str]
-
-
-def create_function(scope: Construct, name: str, cmd: str, env: Dict[str, str], allows: List[Allow] = tuple([]),
-                    memory_size: int = 512, reserved_concurrent_executions: int = 1) -> Function:
-    return DockerImageFunction(
-        scope,
-        f'{name}-function',
-        function_name=name,
-        reserved_concurrent_executions=reserved_concurrent_executions,
-        memory_size=memory_size,
-        timeout=Duration.minutes(15),
-        log_retention=RetentionDays.FIVE_DAYS,
-        code=DockerImageCode.from_image_asset(
-            directory=getcwd(),
-            platform=cast(Platform, Platform.LINUX_AMD64),
-            file='Dockerfile',
-            cmd=[cmd]
-        ),
-        environment=env,
-        role=Role(
-            scope,
-            f'{name}-role',
-            assumed_by=ServicePrincipal('lambda.amazonaws.com'),
-            managed_policies=[ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole')],
-            inline_policies={
-                'Policies': PolicyDocument(statements=[
-                    PolicyStatement(
-                        effect=Effect.ALLOW,
-                        actions=allow.actions,
-                        resources=allow.resources
-                    )
-                    for allow in allows
-                ])
-            }
-        )
+def allow(actions: List[str], resources: List[str]) -> PolicyStatement:
+    return PolicyStatement(
+        effect=Effect.ALLOW,
+        actions=actions,
+        resources=resources
     )
 
 
 if __name__ == '__main__':
     app = App()
-    MatchProcessorStack(app)
+    TastytradeAutomationStack(app)
     app.synth()
