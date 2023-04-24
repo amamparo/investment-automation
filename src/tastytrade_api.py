@@ -1,3 +1,4 @@
+import json
 from types import MappingProxyType
 from typing import Optional, Any, Dict
 
@@ -18,6 +19,13 @@ class TastytradeApi:
         return requests.get(
             f'{self.__base_url}{path}',
             params=params,
+            headers={'Authorization': self.__token, 'content-type': 'application/json'}
+        ).json()
+
+    def put(self, path: str, payload: dict) -> dict:
+        return requests.put(
+            f'{self.__base_url}{path}',
+            data=json.dumps(payload),
             headers={'Authorization': self.__token, 'content-type': 'application/json'}
         ).json()
 

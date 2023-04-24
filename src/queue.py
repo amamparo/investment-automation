@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Iterator, Callable
 
 import boto3
 from injector import inject
@@ -17,6 +17,19 @@ class Queue:
         batches = [messages[i:i + batch_size] for i in range(0, len(messages), batch_size)]
         for batch in batches:
             self.__queue.send_messages(Entries=[{'Id': str(i), 'MessageBody': x} for i, x in enumerate(batch)])
+
+    def process(self, handler: Callable[[str], None]) -> None:
+        while True:
+            messages = self.__queue.receive_messages(MaxNumberOfMessages=10)
+            if not messages:
+                return
+            for message in messages:
+                try:
+                    handler(message.body)
+                finally:
+                    message.delete()
+
+
 
 
 class UnderlyingsQueue(Queue):

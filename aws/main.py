@@ -3,10 +3,11 @@ from os import getcwd
 from typing import List, Dict, cast
 
 from aws_cdk import Stack, App, Duration, Environment
-from aws_cdk.aws_applicationautoscaling import Schedule
+from aws_cdk.aws_applicationautoscaling import Schedule, ScalingInterval
 from aws_cdk.aws_ecr_assets import Platform
 from aws_cdk.aws_ecs import Cluster, ContainerImage, Secret as EcsSecret
-from aws_cdk.aws_ecs_patterns import ScheduledFargateTask, ScheduledFargateTaskImageOptions
+from aws_cdk.aws_ecs_patterns import ScheduledFargateTask, ScheduledFargateTaskImageOptions, \
+    QueueProcessingFargateService
 from aws_cdk.aws_iam import PolicyStatement, Effect
 from aws_cdk.aws_secretsmanager import Secret
 from aws_cdk.aws_sqs import Queue
@@ -50,6 +51,7 @@ class TastytradeAutomationStack(Stack):
             'enqueue-underlyings-task',
             cluster=cluster,
             schedule=Schedule.cron(week_day='MON-FRI', hour='13', minute='0'),
+            desired_task_count=0,
             scheduled_fargate_task_image_options=ScheduledFargateTaskImageOptions(
                 image=container_image,
                 command=['python', '-m', 'src.enqueue_underlyings'],
@@ -64,6 +66,34 @@ class TastytradeAutomationStack(Stack):
         enqueue_underlyings_task.task_definition.add_to_task_role_policy(
             allow(['sqs:SendMessage*'], [underlyings_queue.queue_arn])
         )
+
+        process_underlyings_task = QueueProcessingFargateService(
+            self,
+            'process-underlyings-task',
+            cluster=cluster,
+            queue=underlyings_queue,
+            image=container_image,
+            command=['python', '-m', 'src.process_underlyings'],
+            environment={
+                'API_BASE_URL': API_BASE_URL,
+                'UNDERLYINGS_QUEUE_URL': underlyings_queue.queue_url
+            },
+            secrets=secrets,
+            min_scaling_capacity=0,
+            max_scaling_capacity=10,
+            scaling_steps=[
+                ScalingInterval(
+                    upper=0,
+                    change=-10
+                ),
+                ScalingInterval(
+                    lower=1,
+                    change=+10
+                )
+            ]
+        )
+
+
 
 
 def allow(actions: List[str], resources: List[str]) -> PolicyStatement:

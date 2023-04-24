@@ -8,6 +8,7 @@ python-dotenv = "*"
 requests = "*"
 injector = "*"
 boto3 = "*"
+tqdm = "*"
 
 [dev-packages]
 aws-cdk-lib = "*"
