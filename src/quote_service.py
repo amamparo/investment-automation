@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from injector import inject
 
@@ -18,7 +18,9 @@ class QuoteService:
     def __init__(self, api: TastytradeApi):
         self.__api = api
 
-    def get_quotes(self, symbols: List[str]) -> Dict[str, Quote]:
+    def get_quotes(self, symbols: Union[List[str], str]) -> Dict[str, Quote]:
+        if not isinstance(symbols, list):
+            symbols = [symbols]
         quotes: Dict[str, Quote] = {}
         batch_size = 100
         symbol_batches = [symbols[i:i + batch_size] for i in range(0, len(symbols), batch_size)]

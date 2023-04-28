@@ -1,38 +1,25 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 from injector import inject
 
-from src.quote_service import QuoteService, Quote
+from src.quote_service import QuoteService
 from src.tastytrade_api import TastytradeApi
 
 
 @dataclass
 class Contract:
     symbol: str
-    quote: Quote
+    type: str
+    strike: float
 
 
 @dataclass
-class Strike:
-    price: float
-    call: Contract
-    put: Contract
-
-
-@dataclass
-class OptionChain:
+class Expiration:
     expiration: str
-    settlement_type: str
     days_to_expiration: int
-    strikes: List[Strike]
-
-
-@dataclass
-class OptionChainsResponse:
-    underlying: str
-    quote: Quote
-    option_chains: List[OptionChain]
+    type: str
+    contracts: List[Contract]
 
 
 class OptionChainService:
@@ -41,38 +28,23 @@ class OptionChainService:
         self.__api = api
         self.__quote_service = quote_service
 
-    def get_option_chains(self, underlying: str) -> OptionChainsResponse:
-        raw_nested_chains = self.__api.get(f'/option-chains/{underlying}/nested')['data']['items'][0]
-        quote_symbols = [raw_nested_chains['underlying-symbol']]
-        raw_expirations = [x for x in raw_nested_chains['expirations'] if x['expiration-type'] == 'Regular']
-        for expiration in raw_expirations:
-            for strike in expiration['strikes']:
-                quote_symbols.extend([strike['call'], strike['put']])
-        quotes = self.__quote_service.get_quotes(quote_symbols)
-
-        return OptionChainsResponse(
-            underlying=underlying,
-            quote=quotes[underlying],
-            option_chains=[
-                OptionChain(
-                    expiration=x['expiration-date'],
-                    settlement_type=x['settlement-type'],
+    def get_option_chains(self, underlying: str) -> List[Expiration]:
+        expirations: Dict[str, Expiration] = {}
+        for x in self.__api.get(f'/option-chains/{underlying}')['data']['items']:
+            expiration_date = x['expiration-date']
+            expiration = expirations.get(
+                expiration_date,
+                Expiration(
+                    expiration=expiration_date,
                     days_to_expiration=x['days-to-expiration'],
-                    strikes=[
-                        Strike(
-                            price=float(s['strike-price']),
-                            call=Contract(
-                                symbol=s['call'],
-                                quote=quotes[s['call']]
-                            ),
-                            put=Contract(
-                                symbol=s['put'],
-                                quote=quotes[s['put']]
-                            )
-                        )
-                        for s in x['strikes']
-                    ]
+                    type=x['expiration-type'],
+                    contracts=[]
                 )
-                for x in raw_expirations
-            ]
-        )
+            )
+            expiration.contracts.append(Contract(
+                symbol=x['symbol'],
+                type=x['option-type'],
+                strike=float(x['strike-price'])
+            ))
+            expirations[expiration_date] = expiration
+        return list(expirations.values())
