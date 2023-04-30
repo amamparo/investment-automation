@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from statistics import mean, stdev
-from typing import List
+from typing import List, Optional, Dict
 
 from dateutil import parser
 from dateutil.tz import UTC
@@ -13,15 +13,21 @@ from src.tastytrade_api import TastytradeApi
 
 
 @dataclass
-class UnderlyingWithMetrics:
-    symbol: str
-    market_cap: float
-    iv_percentile: float
-    iv_rank: float
-    n_option_contracts: int
+class MarketMetrics:
+    iv_percentile: Optional[float] = None
+    iv_rank: Optional[float] = None
+    n_option_contracts: Optional[int] = None
+
+    def merge(self, other: 'MarketMetrics') -> None:
+        if other.iv_percentile is not None:
+            self.iv_percentile = other.iv_percentile
+        if other.iv_rank is not None:
+            self.iv_rank = other.iv_rank
+        if other.n_option_contracts is not None:
+            self.n_option_contracts = other.n_option_contracts
 
 
-class UnderlyingsEnqueuer:
+class WatchlistUpdater:
     @inject
     def __init__(self, symbol_service: SymbolService, market_metrics_service: MarketMetricsService, api: TastytradeApi):
         self.__symbol_service = symbol_service
@@ -30,32 +36,36 @@ class UnderlyingsEnqueuer:
 
     def run(self) -> None:
         batch: List[str] = []
-        underlyings: List[UnderlyingWithMetrics] = []
+        underlyings: Dict[str, MarketMetrics] = {}
         for symbol in self.__symbol_service.get_symbols():
+            n_option_contracts = self.__get_n_option_contracts(symbol)
+            if not n_option_contracts:
+                continue
+            underlyings[symbol] = MarketMetrics(n_option_contracts=n_option_contracts)
             batch.append(symbol)
             if len(batch) == 100:
-                underlyings.extend(self.__get_underlyings_with_metrics(batch))
+                for key, metrics in self.__get_market_metrics(batch).items():
+                    underlyings[key].merge(metrics)
                 batch = []
         if batch:
-            underlyings.extend(self.__get_underlyings_with_metrics(batch))
+            for key, metrics in self.__get_market_metrics(batch).items():
+                underlyings[key].merge(metrics)
 
-        underlyings = [x for x in underlyings if x.n_option_contracts]
+        mean_n_option_contracts = mean([x.n_option_contracts for x in underlyings.values()])
 
-        mean_n_option_contracts = mean([x.n_option_contracts for x in underlyings])
+        underlyings = {x: y for x, y in underlyings.items() if y.n_option_contracts >= mean_n_option_contracts}
 
-        underlyings = [x for x in underlyings if x.n_option_contracts >= mean_n_option_contracts]
-
-        mean_iv_percentile = mean([x.iv_percentile for x in underlyings])
-        stdev_iv_percentile = stdev([x.iv_percentile for x in underlyings])
+        mean_iv_percentile = mean([x.iv_percentile for x in underlyings.values()])
+        stdev_iv_percentile = stdev([x.iv_percentile for x in underlyings.values()])
         iv_percentile_cutoff = min(mean_iv_percentile + (2 * stdev_iv_percentile), 90)
 
-        mean_iv_rank = mean([x.iv_rank for x in underlyings])
-        stdev_iv_rank = stdev([x.iv_rank for x in underlyings])
+        mean_iv_rank = mean([x.iv_rank for x in underlyings.values()])
+        stdev_iv_rank = stdev([x.iv_rank for x in underlyings.values()])
         iv_rank_cutoff = min(mean_iv_rank + (2 * stdev_iv_rank), 90)
 
-        underlyings = [x for x in underlyings if x.iv_percentile > iv_percentile_cutoff and x.iv_rank > iv_rank_cutoff]
-
-        self.__update_watchlist([x.symbol for x in underlyings])
+        self.__update_watchlist(
+            [x for x, y in underlyings.items() if y.iv_percentile > iv_percentile_cutoff and y.iv_rank > iv_rank_cutoff]
+        )
 
     def __update_watchlist(self, symbols: List[str]) -> None:
         name = 'High IV'
@@ -64,20 +74,17 @@ class UnderlyingsEnqueuer:
             'watchlist-entries': [{'symbol': x} for x in symbols]
         })
 
-    def __get_underlyings_with_metrics(self, symbols: List[str]) -> List[UnderlyingWithMetrics]:
-        return [
-            UnderlyingWithMetrics(
-                symbol=x['symbol'],
-                market_cap=float(x['market-cap']),
-                iv_percentile=float(x['implied-volatility-percentile']),
-                iv_rank=float(x['implied-volatility-index-rank']),
-                n_option_contracts=self.__get_n_option_contracts(x['symbol'])
+    def __get_market_metrics(self, symbols: List[str]) -> Dict[str, MarketMetrics]:
+        return {
+            key: MarketMetrics(
+                iv_percentile=float(value['implied-volatility-percentile']),
+                iv_rank=float(value['implied-volatility-index-rank'])
             )
-            for x in self.__market_metrics_service.get_market_metrics(symbols).values()
-            if 'market-cap' in x and 'implied-volatility-percentile' in x and 'implied-volatility-index-rank' in x
-               and 'updated-at' in x and parser.parse(x['updated-at']).replace(tzinfo=UTC) >= (
+            for key, value in self.__market_metrics_service.get_market_metrics(symbols).items()
+            if 'implied-volatility-percentile' in value and 'implied-volatility-index-rank' in value
+               and 'updated-at' in value and parser.parse(value['updated-at']).replace(tzinfo=UTC) >= (
                    datetime.utcnow() - timedelta(days=3)).replace(tzinfo=UTC)
-        ]
+        }
 
     def __get_n_option_contracts(self, symbol: str) -> int:
         option_chains = self.__api.get(f'/option-chains/{symbol}/compact')
@@ -88,4 +95,4 @@ class UnderlyingsEnqueuer:
 
 
 if __name__ == '__main__':
-    Injector().get(UnderlyingsEnqueuer).run()
+    Injector().get(WatchlistUpdater).run()
