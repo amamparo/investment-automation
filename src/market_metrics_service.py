@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Iterator, Dict, List
+from typing import Dict, List
 
 from injector import inject
 

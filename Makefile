@@ -5,5 +5,5 @@ install:
 deploy:
 	cdk deploy --require-approval never
 
-enqueue_underlyings:
-	pipenv run python -m src.enqueue_underlyings
+update_watchlist:
+	pipenv run python -m src.update_watchlist

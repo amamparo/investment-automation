@@ -1,23 +1,17 @@
 from typing import Iterator
 
-from injector import inject, Injector
+from injector import inject
 from tqdm import tqdm
 
-from src.queue import UnderlyingsQueue
 from src.tastytrade_api import TastytradeApi
 
 
-class UnderlyingsEnqueuer:
+class SymbolService:
     @inject
-    def __init__(self, queue: UnderlyingsQueue, api: TastytradeApi):
-        self.__queue = queue
+    def __init__(self, api: TastytradeApi):
         self.__api = api
 
-    def run(self) -> None:
-        for underlying in self.__get_symbols():
-            self.__queue.enqueue(underlying)
-
-    def __get_symbols(self) -> Iterator[str]:
+    def get_symbols(self) -> Iterator[str]:
         page_offset = 0
         result = self.__get_symbols_page(0)
         with tqdm(total=result['pagination']['total-items']) as progress:
@@ -35,7 +29,3 @@ class UnderlyingsEnqueuer:
     def __get_symbols_page(self, page_offset: int) -> dict:
         return self.__api.get('/instruments/equities/active',
                               {'lendability': 'Easy To Borrow', 'page-offset': page_offset})
-
-
-if __name__ == '__main__':
-    Injector().get(UnderlyingsEnqueuer).run()
