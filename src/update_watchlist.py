@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from statistics import mean, stdev
 from typing import List, Dict, Any
 
-from injector import inject, Injector
+from injector import inject, Injector, Module
 
-from src.config import Module, LambdaModule, LocalModule
+from src.config import LambdaModule, LocalModule
 from src.market_metrics_processor import MarketMetricsProcessor, MarketMetrics
 from src.option_chains_processor import OptionChainsProcessor, ContractCount
 from src.symbol_service import SymbolService

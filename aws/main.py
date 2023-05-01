@@ -2,9 +2,8 @@ from os import getcwd
 from typing import List, cast
 
 from aws_cdk import Stack, App, Duration
-from aws_cdk.aws_applicationautoscaling import Schedule
 from aws_cdk.aws_ecr_assets import Platform
-from aws_cdk.aws_events import Rule
+from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import PolicyStatement, Effect, Role, IPrincipal, ServicePrincipal, ManagedPolicy, PolicyDocument
 from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode
@@ -26,7 +25,7 @@ class TastytradeAutomationStack(Stack):
             memory_size=512,
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
-                platform=Platform.LINUX_AMD64(),
+                platform=Platform.LINUX_AMD64,
                 cmd=['src.update_watchlist.lambda_handler']
             ),
             timeout=Duration.minutes(15),
@@ -45,7 +44,7 @@ class TastytradeAutomationStack(Stack):
                 ],
                 inline_policies={
                     'Policies': PolicyDocument(statements=[
-                        allow([], [secret.secret_arn])
+                        allow(['secretsmanager:GetSecretValue'], [secret.secret_arn])
                     ])
                 }
             )

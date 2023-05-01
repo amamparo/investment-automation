@@ -5,7 +5,7 @@ from typing import Optional, Any, Dict
 import requests
 from injector import singleton, inject
 
-from src.env import Environment
+from src.config import Environment
 
 
 @singleton
