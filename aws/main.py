@@ -22,7 +22,7 @@ class TastytradeAutomationStack(Stack):
             'function',
             reserved_concurrent_executions=1,
             function_name='update-high-iv-watchlist',
-            memory_size=512,
+            memory_size=128,
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
                 platform=Platform.LINUX_AMD64,
