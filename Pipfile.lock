@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6ba35e1e795ee7a045492384cc0d0abf124a2d888f680b1aba76fcc4ad089e05"
+            "sha256": "aa92a19c8c06542431b24372e187d28f95c543f4883fb8ccb1133cb4aba3e81d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -155,7 +155,7 @@
                 "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
                 "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==2.8.2"
         },
         "python-dotenv": {
@@ -187,16 +187,23 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.16.0"
+        },
+        "strenum": {
+            "hashes": [
+                "sha256:898cc0ebb5054ee07400341ac1d75fdfee489d76d6df3fbc1c2eaf95971e3916",
+                "sha256:aebf04bba8e5af435937c452d69a86798b6f8d5ca5f20ba18561dbfad571ccdd"
+            ],
+            "version": "==0.4.10"
         },
         "tastytrade-sdk": {
             "hashes": [
-                "sha256:07970e21f7df85f2be96f1fc1e01394c1e2dccd679874eb13b81561f9c2cd562",
-                "sha256:4a464be63a3a34719c33344133182d620470e28b3f82d80e668a82a12a5c1e84"
+                "sha256:512784578dab77ea7b1d6acbdcaf024961d4633ab9ec91bc09e11d00989d9a4d",
+                "sha256:8dc338cf31350451156a2bdf7d1df377bb551ce796c518c163a294a5c4a5711e"
             ],
             "index": "testpypi",
-            "version": "==0.0.1.dev40"
+            "version": "==0.0.1.dev42"
         },
         "urllib3": {
             "hashes": [
@@ -300,7 +307,7 @@
                 "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
                 "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==2.8.2"
         },
         "six": {
@@ -308,7 +315,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.16.0"
         },
         "typeguard": {

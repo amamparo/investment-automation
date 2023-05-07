@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 
 from injector import inject, Injector, Module
 from tastytrade_sdk import Tastytrade
+from tastytrade_sdk.instruments import Lendability
 from tastytrade_sdk.market_metrics import MarketMetric
 
 from src.config import LambdaModule, LocalModule
@@ -38,7 +39,7 @@ class WatchlistUpdater:
 
     def run(self) -> None:
         all_symbols = []
-        for equity in self.__tastytrade.instruments.get_active_equities():
+        for equity in self.__tastytrade.instruments.get_active_equities(lendability=Lendability.EASY_TO_BORROW):
             all_symbols.append(equity.symbol)
             self.__market_metrics_processor.process(equity.symbol)
             self.__option_chains_processor.process(equity.symbol)

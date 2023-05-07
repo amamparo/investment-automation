@@ -12,7 +12,7 @@ name = "testpypi"
 python-dotenv = "*"
 injector = "*"
 boto3 = "*"
-tastytrade-sdk = {version = "==0.0.1.dev40", index = "testpypi"}
+tastytrade-sdk = {version = "==0.0.1.dev42", index = "testpypi"}
 
 [dev-packages]
 aws-cdk-lib = "*"
