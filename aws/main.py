@@ -13,15 +13,15 @@ from constructs import Construct
 API_BASE_URL: str = 'https://api.tastyworks.com'
 
 
-class TastytradeAutomationStack(Stack):
+class InvestmentAutomationStack(Stack):
     def __init__(self, scope: Construct):
-        super().__init__(scope, 'tastytrade-automation')
-        secret = Secret(self, 'secret', secret_name='tastytrade-automation-environment')
+        super().__init__(scope, 'investment-automation')
+        secret = Secret(self, 'secret', secret_name='investment-automation-environment')
         function = DockerImageFunction(
             self,
             'function',
             reserved_concurrent_executions=1,
-            function_name='update-high-iv-watchlist',
+            function_name='investment-automation',
             memory_size=128,
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
@@ -36,7 +36,7 @@ class TastytradeAutomationStack(Stack):
             role=Role(
                 self,
                 'role',
-                role_name='update-high-iv-watchlist-role',
+                role_name='investment-automation-role',
                 assumed_by=cast(IPrincipal, ServicePrincipal('lambda.amazonaws.com')),
                 managed_policies=[
                     ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaVPCAccessExecutionRole'),
@@ -66,5 +66,5 @@ def allow(actions: List[str], resources: List[str]) -> PolicyStatement:
 
 if __name__ == '__main__':
     app = App()
-    TastytradeAutomationStack(app)
+    InvestmentAutomationStack(app)
     app.synth()
