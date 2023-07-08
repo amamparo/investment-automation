@@ -1,9 +1,8 @@
-FROM amazon/aws-lambda-python:3.9
+FROM amazon/aws-lambda-python:3.10
 
-COPY Pipfile .
+COPY pyproject.toml .
 RUN pip install --upgrade pip
-RUN pip install pipenv
-RUN pipenv lock --clear
-RUN pipenv requirements > requirements.txt
+RUN pip install poetry
+RUN poetry export -f requirements.txt > requirements.txt
 RUN pip install -r requirements.txt
 COPY src/ ${LAMBDA_TASK_ROOT}/src
