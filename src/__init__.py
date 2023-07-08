@@ -6,6 +6,7 @@ import pkgutil
 __path__ = [x[0] for x in os.walk(os.path.dirname(__file__))]
 
 
+# pylint: disable=unused-argument
 def load_tests(loader, suite, pattern):
     for imp, modname, _ in pkgutil.walk_packages(__path__):
         if not modname.endswith('_test'):

@@ -13,7 +13,7 @@ class LocalModule(Module):
     @singleton
     @provider
     def provide_tastytrade(self) -> Tastytrade:
-        return Tastytrade(login=environ.get('LOGIN'), password=environ.get('PASSWORD'))
+        return Tastytrade().login(login=environ.get('LOGIN'), password=environ.get('PASSWORD'))
 
 
 class LambdaModule(Module):
@@ -23,4 +23,4 @@ class LambdaModule(Module):
         secret = json.loads(
             boto3.client('secretsmanager').get_secret_value(SecretId=environ.get('SECRET_ID'))['SecretString']
         )
-        return Tastytrade(login=secret['LOGIN'], password=secret['PASSWORD'])
+        return Tastytrade().login(login=secret['LOGIN'], password=secret['PASSWORD'])

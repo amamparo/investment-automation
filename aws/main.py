@@ -26,7 +26,7 @@ class TastytradeAutomationStack(Stack):
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
                 platform=Platform.LINUX_AMD64,
-                cmd=['src.update_watchlist.lambda_handler']
+                cmd=['src.main.lambda_handler']
             ),
             timeout=Duration.minutes(15),
             environment={

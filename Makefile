@@ -5,5 +5,13 @@ install:
 deploy:
 	cdk deploy --require-approval never
 
-update_watchlist:
-	pipenv run python -m src.update_watchlist
+run:
+	poetry run python -m src.main
+
+check: lint test
+
+lint:
+	poetry run pylint src aws
+
+test:
+	poetry run python -m unittest discover -s src -p '*_test.py'
