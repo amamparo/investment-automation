@@ -17,11 +17,11 @@ jobs:
       - name: Use Python 3
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
+          python-version: '3.9'
       - name: Setup pipenv
         run: |
           pip install pipenv --upgrade
-          pipenv --python 3.10
+          pipenv --python 3.9
           pipenv install -d
       - name: Use node
         uses: actions/setup-node@v3
