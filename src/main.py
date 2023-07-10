@@ -1,9 +1,8 @@
-import time
 from math import floor
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 from injector import inject, Injector, Module
-from tastytrade_sdk import Tastytrade
+from tastytrade_sdk import Tastytrade, Order, Leg, PositionsParams
 
 from src.config import LambdaModule, LocalModule, Environment
 from src.calculate_porfolio_weights import calculate_portfolio_weights
@@ -12,17 +11,23 @@ from src.calculate_porfolio_weights import calculate_portfolio_weights
 class Main:
     @inject
     def __init__(self, env: Environment, tasty: Tastytrade):
-        self.__env = env
         self.__tasty = tasty
+        self.__portfolio_symbols = env.portfolio_symbols
+        self.__account_number = env.account_number
 
     def run(self) -> None:
-        target_portfoio_weights = calculate_portfolio_weights(self.__env.portfolio_symbols)
+        target_portfoio_weights = calculate_portfolio_weights(self.__portfolio_symbols)
+
+        self.__cancel_stock_orders()
+
         stock_position_quantities = {
             **{symbol: 0 for symbol in target_portfoio_weights.keys()},
             **{
                 x['symbol']: float(x['quantity'])
-                for x in self.__tasty.api.get(f'/accounts/{self.__env.account_number}/positions')['data']['items']
-                if x['instrument-type'] == 'Equity'
+                for x in self.__tasty.accounts.get_positions(
+                    account_number=self.__account_number,
+                    params=PositionsParams(instrument_type='Equity')
+                )
             }
         }
 
@@ -40,11 +45,11 @@ class Main:
             in stock_position_quantities.items()
         }
 
-        stock_buying_power = float(self.__tasty.api.get(
-            f'/accounts/{self.__env.account_number}/balances'
-        )['data']['equity-buying-power'])
+        total_stock_liquidity = sum(stock_position_liquidities.values()) + \
+                                float(self.__tasty.accounts.get_balances(self.__account_number)['equity-buying-power'])
 
-        total_stock_liquidity = sum(stock_position_liquidities.values()) + stock_buying_power
+        # shave off 5% to account for fees and slippage
+        total_stock_liquidity = total_stock_liquidity * .95
 
         target_stock_liquidities = {
             symbol: total_stock_liquidity * target_portfoio_weights.get(symbol, 0)
@@ -58,52 +63,52 @@ class Main:
         }
 
         for symbol, delta in [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta < 0]:
-            self.__order(symbol, abs(delta / float(market_data[symbol]['bid'])), 'Sell to Close')
+            self.__adjust(symbol, delta, float(market_data[symbol]['bid']))
 
         for symbol, delta in [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta > 0]:
-            self.__order(symbol, abs(delta / float(market_data[symbol]['ask'])), 'Buy to Open')
+            self.__adjust(symbol, delta, float(market_data[symbol]['ask']))
 
-    def __order(self, symbol: str, full_quantity: float, action: str) -> None:
-        self.__cancel_orders(symbol)
+    def __adjust(self, symbol: str, delta: float, bid_ask: float) -> None:
+        full_quantity = abs(delta / bid_ask)
         whole_quantity = floor(full_quantity)
         fractional_quantity = floor((full_quantity - whole_quantity) * 100) / 100.0
         for quantity in [whole_quantity, fractional_quantity]:
             if quantity <= 0:
                 continue
-            self.__tasty.api.post(
-                f'/accounts/{self.__env.account_number}/orders',
-                data={
-                    'order-type': 'Market',
-                    'time-in-force': 'GTC',
-                    'legs': [
-                        {
-                            'instrument-type': 'Equity',
-                            'symbol': symbol,
-                            'action': action,
-                            'quantity': quantity
-                        }
-                    ]
-                }
+            if quantity < 1 and quantity * bid_ask < 5.5:
+                continue
+            action = 'Sell to Close' if delta < 0 else 'Buy to Open'
+            filled = self.__tasty.orders.place_order_and_wait(
+                account_number=self.__account_number,
+                order=Order(
+                    order_type='Market',
+                    time_in_force='Day',
+                    legs=[Leg(
+                        instrument_type='Equity',
+                        symbol=symbol,
+                        action=action,
+                        quantity=quantity
+                    )]
+                ),
+                timeout_seconds=10
             )
-        while self.__get_working_order_ids(symbol):
-            time.sleep(1)
+            if not filled:
+                raise Exception(f'Failed to fill "{action}" market order for {quantity} shares of {symbol}')
 
-    def __cancel_orders(self, symbol: str) -> None:
-        for order_id in self.__get_working_order_ids(symbol):
-            self.__tasty.api.delete(f'/accounts/{self.__env.account_number}/orders/{order_id}')
-
-    def __get_working_order_ids(self, symbol: str) -> List[str]:
-        return [
+    def __cancel_stock_orders(self) -> None:
+        order_ids = [
             x['id'] for x in
             self.__tasty.api.get(
-                f'/accounts/{self.__env.account_number}/orders',
+                f'/accounts/{self.__account_number}/orders',
                 params={
                     'status[]': 'Received',
-                    'underlying-instrument-type': 'Equity',
-                    'underlying-symbol': symbol
+                    'underlying-instrument-type': 'Equity'
                 }
             )['data']['items']
+            if all(x['instrument-type'] == 'Equity' for x in x['legs'])
         ]
+        for order_id in order_ids:
+            self.__tasty.api.delete(f'/accounts/{self.__account_number}/orders/{order_id}')
 
 
 def main(module: Module) -> None:
