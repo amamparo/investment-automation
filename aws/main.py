@@ -10,8 +10,6 @@ from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode
 from aws_cdk.aws_secretsmanager import Secret
 from constructs import Construct
 
-API_BASE_URL: str = 'https://api.tastyworks.com'
-
 
 class InvestmentAutomationStack(Stack):
     def __init__(self, scope: Construct):
@@ -30,8 +28,8 @@ class InvestmentAutomationStack(Stack):
             ),
             timeout=Duration.minutes(15),
             environment={
-                'API_BASE_URL': API_BASE_URL,
-                'SECRET_ID': secret.secret_name
+                'SECRET_ID': secret.secret_name,
+                'PORTFOLIO_SYMBOLS': 'VOO,VO,VB,VEA'
             },
             role=Role(
                 self,
