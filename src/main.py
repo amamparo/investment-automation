@@ -49,8 +49,8 @@ class Main:
         total_stock_liquidity = sum(stock_position_liquidities.values()) + \
                                 float(self.__tasty.accounts.get_balances(self.__account_number)['equity-buying-power'])
 
-        # shave off 5% to account for fees and slippage
-        total_stock_liquidity = total_stock_liquidity * .95
+        # leave a small % in cash to account for fees and slippage
+        total_stock_liquidity = total_stock_liquidity * .98
 
         target_stock_liquidities = {
             symbol: total_stock_liquidity * target_portfoio_weights.get(symbol, 0)
