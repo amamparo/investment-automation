@@ -29,7 +29,7 @@ class InvestmentAutomationStack(Stack):
             timeout=Duration.minutes(15),
             environment={
                 'SECRET_ID': secret.secret_name,
-                'PORTFOLIO_SYMBOLS': 'VOO,VO,VB,VEA'
+                'PORTFOLIO_SYMBOLS': 'IVW,ISCG,IMCG,IGRO,GOVT'
             },
             role=Role(
                 self,
