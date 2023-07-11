@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from math import floor
 from typing import Dict, Any
@@ -70,31 +71,26 @@ class Main:
             self.__adjust(symbol, delta, float(market_data[symbol]['ask']))
 
     def __adjust(self, symbol: str, delta: float, bid_ask: float) -> None:
-        full_quantity = abs(delta / bid_ask)
-        whole_quantity = floor(full_quantity)
-        fractional_quantity = floor((full_quantity - whole_quantity) * 100) / 100.0
-        for quantity in [whole_quantity, fractional_quantity]:
-            if quantity <= 0:
-                continue
-            if quantity < 1 and quantity * bid_ask < 5.5:
-                continue
-            action = 'Sell to Close' if delta < 0 else 'Buy to Open'
-            filled = self.__tasty.orders.place_order_and_wait(
-                account_number=self.__account_number,
-                order=Order(
-                    order_type='Market',
-                    time_in_force='Day',
-                    legs=[Leg(
-                        instrument_type='Equity',
-                        symbol=symbol,
-                        action=action,
-                        quantity=quantity
-                    )]
-                ),
-                timeout_seconds=10
-            )
-            if not filled:
-                raise Exception(f'Failed to fill "{action}" market order for {quantity} shares of {symbol}')
+        quantity = floor(abs(delta / bid_ask))
+        if quantity <= 0:
+            return
+        action = 'Sell to Close' if delta < 0 else 'Buy to Open'
+        filled = self.__tasty.orders.place_order_and_wait(
+            account_number=self.__account_number,
+            order=Order(
+                order_type='Market',
+                time_in_force='Day',
+                legs=[Leg(
+                    instrument_type='Equity',
+                    symbol=symbol,
+                    action=action,
+                    quantity=quantity
+                )]
+            ),
+            timeout_seconds=10
+        )
+        if not filled:
+            raise Exception(f'Failed to fill "{action}" market order for {quantity} shares of {symbol}')
 
     def __cancel_stock_orders(self) -> None:
         order_ids = [
@@ -128,4 +124,5 @@ def lambda_handler(event: Dict = None, context: Any = None) -> None:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     main(LocalModule())
