@@ -114,12 +114,12 @@ def main(module: Module) -> None:
 
 # pylint: disable=unused-argument
 def lambda_handler(event: Dict = None, context: Any = None) -> None:
-    weekday = datetime.today().weekday()
-    day = datetime.today().day
-    is_first_weekday_of_month = (weekday == 0 and day in (1, 2, 3)) or (weekday in (1, 2, 3, 4) and day == 1)
-    if not is_first_weekday_of_month:
-        print('Not the first weekday of the month. Exiting.')
-        return
+    # weekday = datetime.today().weekday()
+    # day = datetime.today().day
+    # is_first_weekday_of_month = (weekday == 0 and day in (1, 2, 3)) or (weekday in (1, 2, 3, 4) and day == 1)
+    # if not is_first_weekday_of_month:
+    #     print('Not the first weekday of the month. Exiting.')
+    #     return
     main(LambdaModule())
 
 
