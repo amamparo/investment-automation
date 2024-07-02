@@ -18,11 +18,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-      - name: Setup pipenv
+      - name: Setup poetry
         run: |
-          pip install pipenv --upgrade
-          pipenv --python 3.9
-          pipenv install -d
+          pip install poetry --upgrade
       - name: Use node
         uses: actions/setup-node@v3
         with:
