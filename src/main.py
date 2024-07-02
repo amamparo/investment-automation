@@ -19,6 +19,7 @@ class Main:
 
     def run(self) -> None:
         target_portfoio_weights = calculate_portfolio_weights(self.__portfolio_symbols)
+        print(f'Target weights: {target_portfoio_weights}')
 
         self.__cancel_stock_orders()
 
