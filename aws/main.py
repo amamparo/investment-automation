@@ -20,7 +20,7 @@ class InvestmentAutomationStack(Stack):
             'function',
             reserved_concurrent_executions=1,
             function_name='investment-automation',
-            memory_size=128,
+            memory_size=256,
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
                 platform=Platform.LINUX_AMD64,
@@ -29,7 +29,7 @@ class InvestmentAutomationStack(Stack):
             timeout=Duration.minutes(15),
             environment={
                 'SECRET_ID': secret.secret_name,
-                'PORTFOLIO_SYMBOLS': 'VOO,VO,VB,VEA,BND'
+                'PORTFOLIO_SYMBOLS': 'VTI,VXUS,VWO,BND,VNQ'
             },
             role=Role(
                 self,
