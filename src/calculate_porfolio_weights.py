@@ -43,7 +43,7 @@ def _enforce_minimum_weight(weights: Dict[str, float], minimum_weight: float = 0
     for etf, weight in weights.items():
         if weight > minimum_weight:
             weights[etf] += (weight / total_above_min) * remaining_weight
-    return {etf: float(f"{(weight / total_weight):.2f}") for etf, weight in weights.items()}
+    return {etf: float(f"{weight:.2f}") for etf, weight in weights.items()}
 
 
 def _get_daily_returns(symbol: str) -> Series:
