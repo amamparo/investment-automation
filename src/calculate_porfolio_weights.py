@@ -42,7 +42,7 @@ def _enforce_minimum_weight(weights: Dict[str, float], minimum_weight: float = 0
 
 
 def _truncate(value):
-    return float(Decimal(str(value)).quantize(Decimal('0.00'), rounding=ROUND_DOWN))
+    return float(Decimal(str(value)).quantize(Decimal('0.000'), rounding=ROUND_DOWN))
 
 
 def _get_daily_returns(symbol: str) -> Series:
