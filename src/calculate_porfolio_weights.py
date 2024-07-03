@@ -35,9 +35,15 @@ def calculate_portfolio_weights(symbols: List[str]) -> Dict[str, float]:
 
 
 def _enforce_minimum_weight(weights: Dict[str, float], minimum_weight: float = 0.05) -> Dict[str, float]:
-    adjusted_weights = {etf: max(weight, minimum_weight) for etf, weight in weights.items()}
-    total_weight = sum(adjusted_weights.values())
-    return {etf: float(f"{(weight / total_weight):.2f}") for etf, weight in adjusted_weights.items()}
+    for etf, weight in weights.items():
+        if weight < minimum_weight:
+            weights[etf] = minimum_weight
+    remaining_weight = 1.0 - sum(weights.values())
+    total_above_min = sum(weight for weight in weights.values() if weight > minimum_weight)
+    for etf, weight in weights.items():
+        if weight > minimum_weight:
+            weights[etf] += (weight / total_above_min) * remaining_weight
+    return {etf: float(f"{(weight / total_weight):.2f}") for etf, weight in weights.items()}
 
 
 def _get_daily_returns(symbol: str) -> Series:
