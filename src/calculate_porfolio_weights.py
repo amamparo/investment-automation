@@ -31,7 +31,13 @@ def calculate_portfolio_weights(symbols: List[str]) -> Dict[str, float]:
         bounds=tuple((0, 1) for _ in range(num_assets)),
         constraints=({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
     ).x
-    return {index: row['weight'] for index, row in portfolio.iterrows()}
+    return _enforce_minimum_weight({index: row['weight'] for index, row in portfolio.iterrows()})
+
+
+def _enforce_minimum_weight(weights: Dict[str, float], minimum_weight: float = 0.05) -> Dict[str, float]:
+    adjusted_weights = {etf: max(weight, minimum_weight) for etf, weight in weights.items()}
+    total_weight = sum(adjusted_weights.values())
+    return {etf: weight / total_weight for etf, weight in adjusted_weights.items()}
 
 
 def _get_daily_returns(symbol: str) -> Series:
