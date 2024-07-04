@@ -1,4 +1,4 @@
-FROM amazon/aws-lambda-python:3.12
+FROM amazon/aws-lambda-python:3.11
 
 RUN yum update -y && yum install -y wget xorg-x11-fonts-75dpi xorg-x11-fonts-misc \
     ipa-gothic-fonts xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 unzip atk java-1.8.0-openjdk \
