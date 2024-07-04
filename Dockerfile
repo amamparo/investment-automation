@@ -1,8 +1,10 @@
 FROM amazon/aws-lambda-python:3.11
 
-RUN ./install_glibc.sh
 
 COPY . ${LAMBDA_TASK_ROOT}
+
+RUN ./${LAMBDA_TASK_ROOT}/install_glibc.sh
+
 COPY src/ ${LAMBDA_TASK_ROOT}/src
 WORKDIR ${LAMBDA_TASK_ROOT}
 RUN pip install --upgrade pip
