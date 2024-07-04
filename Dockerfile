@@ -1,8 +1,7 @@
 FROM amazon/aws-lambda-python:3.11
 
-RUN touch ~/.bashrc
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-RUN source ~/.bashrc
+RUN [ -s "~/.nvm/nvm.sh" ] && \. "~/.nvm/nvm.sh"
 RUN nvm install 20
 
 COPY . ${LAMBDA_TASK_ROOT}
