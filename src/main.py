@@ -19,10 +19,10 @@ class Main:
         self.__config = config
 
     def run(self) -> None:
-        # is_market_open = self.__tasty.api.get('/market-time/equities/sessions/current')['data']['state'] == 'Open'
-        # if not is_market_open:
-        #     print('Market is closed')
-        #     return
+        is_market_open = self.__tasty.api.get('/market-time/equities/sessions/current')['data']['state'] == 'Open'
+        if not is_market_open:
+            print('Market is closed')
+            return
 
         target_portfolio_weights = calculate_optimal_portfolio_weights(self.__config.portfolio_symbols,
                                                                        self.__config.min_allocation,
