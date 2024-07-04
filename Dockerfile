@@ -3,6 +3,8 @@ FROM amazon/aws-lambda-python:3.11
 
 COPY . ${LAMBDA_TASK_ROOT}
 
+RUN yum update -y
+RUN yum install -y wget tar gcc
 RUN ./install_glibc.sh
 
 COPY src/ ${LAMBDA_TASK_ROOT}/src
