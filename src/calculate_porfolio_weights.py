@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal, ROUND_DOWN
 from math import sqrt
 from typing import Dict, List, Callable
 
@@ -27,7 +28,11 @@ def calculate_optimal_portfolio_weights(symbols: List[str], min_allocation: floa
         bounds=tuple((min_allocation, max_allocation) for _ in range(num_assets)),
         constraints=({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
     ).x
-    return {str(index): float(row['weight']) for index, row in portfolio.iterrows()}
+    return {str(index): __truncate(float(row['weight'])) for index, row in portfolio.iterrows()}
+
+
+def __truncate(value: float):
+    return float(Decimal(str(value)).quantize(Decimal('0.00'), rounding=ROUND_DOWN))
 
 
 def __sharpe_ratio_objective(portfolio: DataFrame) -> Callable[[np.ndarray], float]:

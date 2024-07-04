@@ -11,6 +11,7 @@ class Config:
     portfolio_symbols: List[str]
     min_allocation: float
     max_allocation: float
+    allocation_change_threshold: float
 
     @inject
     def __init__(self):
@@ -19,3 +20,5 @@ class Config:
             self.portfolio_symbols = config['portfolio_symbols']
             self.min_allocation = config['min_allocation']
             self.max_allocation = config['max_allocation']
+            self.allocation_change_threshold = config['allocation_change_threshold']
+

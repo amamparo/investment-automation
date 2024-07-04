@@ -19,10 +19,10 @@ class Main:
         self.__config = config
 
     def run(self) -> None:
-        is_market_open = self.__tasty.api.get('/market-time/equities/sessions/current')['data']['state'] == 'Open'
-        if not is_market_open:
-            print('Market is closed')
-            return
+        # is_market_open = self.__tasty.api.get('/market-time/equities/sessions/current')['data']['state'] == 'Open'
+        # if not is_market_open:
+        #     print('Market is closed')
+        #     return
 
         target_portfolio_weights = calculate_optimal_portfolio_weights(self.__config.portfolio_symbols,
                                                                        self.__config.min_allocation,
@@ -57,7 +57,7 @@ class Main:
 
         total_liquidity = sum(position_liquidities.values()) + float(
             self.__tasty.accounts.get_balances(self.__account_number)['equity-buying-power']
-        ) * .99
+        )
 
         target_position_liquidities = {
             symbol: total_liquidity * target_portfolio_weights.get(symbol, 0)
@@ -65,7 +65,8 @@ class Main:
             in position_liquidities.items()
         }
 
-        if not self.__should_adjust(total_liquidity, position_liquidities, target_position_liquidities):
+        if not self.__should_adjust(total_liquidity, position_liquidities, target_position_liquidities,
+                                    self.__config.allocation_change_threshold):
             print('No adjustments needed')
             return
 
@@ -80,8 +81,9 @@ class Main:
         for symbol, delta in [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta > 0]:
             self.__adjust(symbol, delta, float(market_data[symbol]['ask']))
 
-    def __should_adjust(self, total_liquidity: float, current_position_liquidities: Dict[str, float],
-                        target_position_liquidities: Dict[str, float]) -> bool:
+    @staticmethod
+    def __should_adjust(total_liquidity: float, current_position_liquidities: Dict[str, float],
+                        target_position_liquidities: Dict[str, float], allocation_change_threshold: float) -> bool:
         current_weights = {
             symbol: liquidity / total_liquidity
             for symbol, liquidity in current_position_liquidities.items()
@@ -95,7 +97,7 @@ class Main:
             symbol: abs(target_weights.get(symbol, 0) - current_weights.get(symbol, 0))
             for symbol in all_symbols
         }
-        return any(delta >= 0.05 for delta in weight_deltas.values())
+        return any(delta >= allocation_change_threshold for delta in weight_deltas.values())
 
     def __adjust(self, symbol: str, delta: float, bid_or_ask: float) -> None:
         quantity = floor(abs(delta / bid_or_ask))
