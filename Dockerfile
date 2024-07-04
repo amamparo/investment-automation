@@ -1,5 +1,7 @@
 FROM amazon/aws-lambda-python:3.11
 
+RUN ./install_glibc.sh
+
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
 WORKDIR ${LAMBDA_TASK_ROOT}
