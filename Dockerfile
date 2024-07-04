@@ -7,7 +7,7 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry install
 
-RUN yum install nodejs npm --enablerepo=epel
+RUN yum update -y && yum install -y nodejs npm
 RUN poetry run playwright install chromium --with-deps
 
 RUN poetry export > requirements.txt
