@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<4"
+python = ">=3.11,<4"
 python-dotenv = "^1.0.0"
 injector = "^0.20.1"
 boto3 = "^1.28.1"
