@@ -5,8 +5,8 @@ from aws_cdk import Stack, App, Duration
 from aws_cdk.aws_ecr_assets import Platform
 from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_iam import PolicyStatement, Effect, Role, IPrincipal, ServicePrincipal, ManagedPolicy, PolicyDocument
-from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode
+from aws_cdk.aws_iam import PolicyStatement, Effect
+from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode, IFunction
 from aws_cdk.aws_secretsmanager import Secret
 from constructs import Construct
 
@@ -27,31 +27,14 @@ class InvestmentAutomationStack(Stack):
                 cmd=['src.main.lambda_handler']
             ),
             timeout=Duration.minutes(15),
-            environment={
-                'SECRET_ID': secret.secret_name,
-                'PORTFOLIO_SYMBOLS': 'VTI,VXUS,VWO,BND,VNQ'
-            },
-            role=Role(
-                self,
-                'role',
-                role_name='investment-automation-role',
-                assumed_by=cast(IPrincipal, ServicePrincipal('lambda.amazonaws.com')),
-                managed_policies=[
-                    ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaVPCAccessExecutionRole'),
-                    ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole')
-                ],
-                inline_policies={
-                    'Policies': PolicyDocument(statements=[
-                        allow(['secretsmanager:GetSecretValue'], [secret.secret_arn])
-                    ])
-                }
-            )
+            environment={'SECRET_ID': secret.secret_name}
         )
+        secret.grant_read(function)
         Rule(
             self,
             'schedule',
             schedule=Schedule.cron(week_day='MON-FRI', hour='15', minute='0')
-        ).add_target(LambdaFunction(function))
+        ).add_target(LambdaFunction(cast(IFunction, function)))
 
 
 def allow(actions: List[str], resources: List[str]) -> PolicyStatement:

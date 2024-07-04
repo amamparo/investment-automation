@@ -1,0 +1,3 @@
+portfolio_symbols = ["VTI", "VXUS", "VWO", "BND", "VNQ"]
+min_allocation = 0.05
+max_allocation = 0.5

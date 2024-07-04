@@ -1,4 +1,4 @@
-FROM amazon/aws-lambda-python:3.9
+FROM amazon/aws-lambda-python:3.11
 
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src

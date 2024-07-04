@@ -1,3 +1,5 @@
 cdk.out
 aws
 .github
+.idea
+.env
