@@ -1,7 +1,7 @@
 FROM amazon/aws-lambda-python:3.11
 
-RUN yum --enablerepo=extras install epel-release
-RUN yum update -y && yum install -y nodejs --enablerepo=epel
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+RUN nvm install 20
 
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
