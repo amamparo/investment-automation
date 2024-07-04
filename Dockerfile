@@ -6,6 +6,8 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry install
+
+RUN yum install nodejs npm --enablerepo=epel
 RUN poetry run playwright install chromium --with-deps
 
 RUN poetry export > requirements.txt
