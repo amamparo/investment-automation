@@ -1,7 +1,7 @@
 FROM amazon/aws-lambda-python:3.11
 
 RUN curl -O -L https://npmjs.org/install.sh
-RUN sh install.sh
+RUN ./install.sh
 
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
