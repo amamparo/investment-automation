@@ -1,6 +1,6 @@
 FROM amazon/aws-lambda-python:3.12
 
-RUN wget http://security.ubuntu.com/ubuntu/pool/main/a/apt/apt_1.0.1ubuntu2.17_amd64.deb -O apt.deb
+RUN curl -o apt.deb http://security.ubuntu.com/ubuntu/pool/main/a/apt/apt_1.0.1ubuntu2.17_amd64.deb
 RUN pkexec dpkg -i apt.deb
 
 COPY . ${LAMBDA_TASK_ROOT}
