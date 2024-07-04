@@ -23,7 +23,7 @@ class InvestmentAutomationStack(Stack):
             memory_size=256,
             code=DockerImageCode.from_image_asset(
                 directory=getcwd(),
-                platform=Platform.LINUX_AMD64,
+                platform=Platform.LINUX_ARM64,
                 cmd=['src.main.lambda_handler']
             ),
             timeout=Duration.minutes(15),
