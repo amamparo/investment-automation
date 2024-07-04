@@ -1,33 +1,7 @@
 FROM amazon/aws-lambda-python:3.12
 
-RUN yum update -y && \
-    yum install -y \
-    alsa-lib.x86_64 \
-    atk.x86_64 \
-    cups-libs.x86_64 \
-    gtk3.x86_64 \
-    ipa-gothic-fonts \
-    libXcomposite.x86_64 \
-    libXcursor.x86_64 \
-    libXdamage.x86_64 \
-    libXext.x86_64 \
-    libXi.x86_64 \
-    libXrandr.x86_64 \
-    libXScrnSaver.x86_64 \
-    libXtst.x86_64 \
-    pango.x86_64 \
-    xorg-x11-fonts-100dpi \
-    xorg-x11-fonts-75dpi \
-    xorg-x11-utils \
-    xorg-x11-fonts-cyrillic \
-    xorg-x11-fonts-misc \
-    xorg-x11-fonts-Type1 \
-    xorg-x11-server-utils \
-    which \
-    libgbm \
-    nss \
-    freetype \
-    && yum clean all
+RUN wget http://security.ubuntu.com/ubuntu/pool/main/a/apt/apt_1.0.1ubuntu2.17_amd64.deb -O apt.deb
+RUN pkexec dpkg -i apt.deb
 
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
