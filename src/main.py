@@ -65,25 +65,31 @@ class Main:
             in position_liquidities.items()
         }
 
-        if not self.__should_adjust(total_liquidity, position_liquidities, target_position_liquidities,
-                                    self.__config.allocation_change_threshold):
-            print('No adjustments needed')
-            return
-
         liquidity_deltas = {
             symbol: target_liquidity - position_liquidities[symbol]
             for symbol, target_liquidity in target_position_liquidities.items()
         }
 
-        for symbol, delta in [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta < 0]:
+        to_sell = [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta < 0]
+        to_buy = [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta > 0]
+
+        buys_only = to_buy and not to_sell
+        if buys_only:
+            pass
+        elif not self.__should_rebalance(total_liquidity, position_liquidities, target_position_liquidities,
+                                         self.__config.allocation_change_threshold):
+            print('No rebalance needed')
+            return
+
+        for symbol, delta in to_sell:
             self.__adjust(symbol, delta, float(market_data[symbol]['bid']))
 
-        for symbol, delta in [(symbol, delta) for symbol, delta in liquidity_deltas.items() if delta > 0]:
+        for symbol, delta in to_buy:
             self.__adjust(symbol, delta, float(market_data[symbol]['ask']))
 
     @staticmethod
-    def __should_adjust(total_liquidity: float, current_position_liquidities: Dict[str, float],
-                        target_position_liquidities: Dict[str, float], allocation_change_threshold: float) -> bool:
+    def __should_rebalance(total_liquidity: float, current_position_liquidities: Dict[str, float],
+                           target_position_liquidities: Dict[str, float], allocation_change_threshold: float) -> bool:
         current_weights = {
             symbol: liquidity / total_liquidity
             for symbol, liquidity in current_position_liquidities.items()
@@ -94,16 +100,17 @@ class Main:
         }
         all_symbols = set(current_weights.keys()) | set(target_weights.keys())
         weight_deltas = {
-            symbol: abs(target_weights.get(symbol, 0) - current_weights.get(symbol, 0))
+            symbol: target_weights.get(symbol, 0) - current_weights.get(symbol, 0)
             for symbol in all_symbols
         }
-        return any(delta >= allocation_change_threshold for delta in weight_deltas.values())
+        return any(abs(delta) >= allocation_change_threshold for delta in weight_deltas.values())
 
     def __adjust(self, symbol: str, delta: float, bid_or_ask: float) -> None:
         quantity = floor(abs(delta / bid_or_ask))
         if quantity <= 0:
             return
         action = 'Sell to Close' if delta < 0 else 'Buy to Open'
+        print(f'{action} {quantity} {symbol}')
         filled = self.__tasty.orders.place_order_and_wait(
             account_number=self.__account_number,
             order=Order(
