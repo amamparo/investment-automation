@@ -29,7 +29,7 @@ RUN yum update -y && \
     libgbm \
     nss \
     freetype \
-    && yum clean all \
+    && yum clean all
 
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
