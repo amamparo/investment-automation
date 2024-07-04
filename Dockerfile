@@ -8,7 +8,7 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry install
 
-RUN yum update -y && yum install -y gcc
+RUN yum update -y && yum install -y glib*
 RUN poetry run playwright install chromium --with-deps
 
 RUN poetry export > requirements.txt
