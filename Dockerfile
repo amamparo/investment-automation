@@ -1,5 +1,8 @@
 FROM amazon/aws-lambda-python:3.11
 
+RUN yum --enablerepo=extras install epel-release
+RUN yum update -y && yum install -y nodejs --enablerepo=epel
+
 COPY . ${LAMBDA_TASK_ROOT}
 COPY src/ ${LAMBDA_TASK_ROOT}/src
 WORKDIR ${LAMBDA_TASK_ROOT}
@@ -7,7 +10,6 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry install
 
-RUN yum update -y && yum install -y nodejs --enablerepo=epel
 RUN poetry run playwright install chromium --with-deps
 
 RUN poetry export > requirements.txt
