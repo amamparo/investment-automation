@@ -37,7 +37,7 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry install
 
-RUN poetry run playwright install chromium --with-deps
+RUN poetry run playwright install chromium
 
 RUN poetry export > requirements.txt
 RUN pip install -r requirements.txt
