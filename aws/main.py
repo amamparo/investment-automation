@@ -33,7 +33,7 @@ class InvestmentAutomationStack(Stack):
         Rule(
             self,
             'schedule',
-            schedule=Schedule.cron(week_day='MON-FRI', hour='15', minute='0')
+            schedule=Schedule.cron(day='1', hour='13', minute='0')
         ).add_target(LambdaFunction(cast(IFunction, function)))
 
 
