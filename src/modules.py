@@ -3,7 +3,6 @@ from os import environ
 
 import boto3
 from injector import singleton, provider, Module
-from tastytrade_sdk import Tastytrade
 
 from src.environment import Environment
 
@@ -12,25 +11,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class CommonModule(Module):
-    @singleton
-    @provider
-    def provide_tastytrade(self, env: Environment) -> Tastytrade:
-        return Tastytrade().login(login=env.login, password=env.password)
-
-
-class LocalModule(CommonModule):
+class LocalModule(Module):
     @singleton
     @provider
     def provide_environment(self) -> Environment:
         return Environment(
-            login=environ.get('LOGIN'),
-            password=environ.get('PASSWORD'),
-            account_number=environ.get('ACCOUNT_NUMBER')
+            m1_login=environ.get('M1_LOGIN'),
+            m1_password=environ.get('M1_PASSWORD'),
+            m1_pie_id=environ.get('M1_PIE_ID')
         )
 
 
-class LambdaModule(CommonModule):
+class LambdaModule(Module):
     @singleton
     @provider
     def provide_environment(self) -> Environment:
@@ -38,7 +30,7 @@ class LambdaModule(CommonModule):
             boto3.client('secretsmanager').get_secret_value(SecretId=environ.get('SECRET_ID'))['SecretString']
         )
         return Environment(
-            login=secret['LOGIN'],
-            password=secret['PASSWORD'],
-            account_number=secret['ACCOUNT_NUMBER']
+            m1_login=secret['M1_LOGIN'],
+            m1_password=secret['M1_PASSWORD'],
+            m1_pie_id=secret['M1_PIE_ID']
         )

@@ -7,14 +7,15 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<4"
+python = ">=3.12,<4"
 python-dotenv = "^1.0.0"
 injector = "^0.20.1"
 boto3 = "^1.28.1"
-tastytrade-sdk = "0.1.4a0.dev10"
 requests = "2.29.0"
 pandas = "^2.0.3"
 scipy = "^1.11.1"
+playwright = "^1.45.0"
+pytest-playwright = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 aws-cdk-lib = "^2.87.0"
