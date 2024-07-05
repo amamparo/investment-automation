@@ -398,6 +398,17 @@ files = [
 ]
 
 [[package]]
+name = "imaplib2"
+version = "3.6"
+description = "A threaded Python IMAP4 client."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "imaplib2-3.6-py3-none-any.whl", hash = "sha256:8d51b9bf6b7be99ea3caf4503bb15c7299f626b8d2bb6139e6055cf2613aac6a"},
+    {file = "imaplib2-3.6.tar.gz", hash = "sha256:96cb485b31868a242cb98d5c5dc67b39b22a6359f30316de536060488e581e5b"},
+]
+
+[[package]]
 name = "importlib-resources"
 version = "6.4.0"
 description = "Read resources from Python packages"
@@ -1152,4 +1163,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4"
-content-hash = "da5072a939780fcfc4b033b49d268885cc37ca7cb20b1800018a72d33609ede7"
+content-hash = "d33a3bb1d24a3a0e63b5e6a0964a9a83ac6cea254438ee2ac256417e8601fb06"

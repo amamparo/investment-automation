@@ -33,7 +33,20 @@ class Quant:
             bounds=tuple((min_allocation, max_allocation) for _ in range(num_assets)),
             constraints=({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
         ).x
-        return {str(index): float(row['weight']) * 100 for index, row in portfolio.iterrows()}
+
+        allocations = {str(index): round(row['weight'] * 100) for index, row in portfolio.iterrows()}
+        total_allocation = sum(allocations.values())
+        if total_allocation > 100:
+            surplus = total_allocation - 100
+            sorted_symbols = sorted(allocations.keys(), key=lambda x: allocations[x], reverse=False)
+            for _ in range(surplus):
+                allocations[sorted_symbols.pop()] -= 1
+        elif total_allocation < 100:
+            deficit = 100 - total_allocation
+            sorted_symbols = sorted(allocations.keys(), key=lambda x: allocations[x], reverse=True)
+            for _ in range(deficit):
+                allocations[sorted_symbols.pop()] += 1
+        return allocations
 
     @staticmethod
     def __sharpe_ratio_objective(portfolio: DataFrame) -> Callable[[np.ndarray], float]:

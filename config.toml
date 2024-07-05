@@ -1,4 +1,4 @@
-portfolio_symbols = ["VTI", "VXUS", "VWO", "BND", "VNQ"]
+portfolio_symbols = ["VTI", "VXUS", "VNQ", "BND"]
 min_allocation = 0.05
 max_allocation = 0.5
 allocation_change_threshold = 0.05 # minimum change in allocation to trigger a rebalance

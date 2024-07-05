@@ -18,7 +18,9 @@ class LocalModule(Module):
         return Environment(
             m1_login=environ.get('M1_LOGIN'),
             m1_password=environ.get('M1_PASSWORD'),
-            m1_pie_id=environ.get('M1_PIE_ID')
+            m1_pie_id=environ.get('M1_PIE_ID'),
+            workmail_email_address=environ.get('WORKMAIL_EMAIL_ADDRESS'),
+            workmail_password=environ.get('WORKMAIL_PASSWORD')
         )
 
 
@@ -32,5 +34,7 @@ class LambdaModule(Module):
         return Environment(
             m1_login=secret['M1_LOGIN'],
             m1_password=secret['M1_PASSWORD'],
-            m1_pie_id=secret['M1_PIE_ID']
+            m1_pie_id=secret['M1_PIE_ID'],
+            workmail_email_address=secret['WORKMAIL_EMAIL_ADDRESS'],
+            workmail_password=secret['WORKMAIL_PASSWORD']
         )

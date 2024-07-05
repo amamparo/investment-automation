@@ -1,11 +1,10 @@
 from os import getcwd
-from typing import List, cast
+from typing import cast
 
 from aws_cdk import Stack, App, Duration
 from aws_cdk.aws_ecr_assets import Platform
 from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_iam import PolicyStatement, Effect
 from aws_cdk.aws_lambda import DockerImageFunction, DockerImageCode, IFunction
 from aws_cdk.aws_secretsmanager import Secret
 from constructs import Construct
@@ -35,14 +34,6 @@ class InvestmentAutomationStack(Stack):
             'schedule',
             schedule=Schedule.cron(day='1', hour='13', minute='0')
         ).add_target(LambdaFunction(cast(IFunction, function)))
-
-
-def allow(actions: List[str], resources: List[str]) -> PolicyStatement:
-    return PolicyStatement(
-        effect=Effect.ALLOW,
-        actions=actions,
-        resources=resources
-    )
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ pandas = "^2.0.3"
 scipy = "^1.11.1"
 playwright = "^1.45.0"
 pytest-playwright = "^0.5.1"
+imaplib2 = "^3.6"
 
 [tool.poetry.group.dev.dependencies]
 aws-cdk-lib = "^2.87.0"

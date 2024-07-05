@@ -17,10 +17,10 @@ class Main:
         self.__m1 = m1
 
     def run(self) -> None:
-        # target_allocations = self.__quant.suggest_allocations(self.__config.portfolio_symbols,
-        #                                                       self.__config.min_allocation,
-        #                                                       self.__config.max_allocation)
-        self.__m1.update_pie({'VNQ': 91, 'TSLA': 9})
+        target_allocations = self.__quant.suggest_allocations(self.__config.portfolio_symbols,
+                                                              self.__config.min_allocation,
+                                                              self.__config.max_allocation)
+        self.__m1.update_pie(target_allocations)
 
 
 def main(module: Module) -> None:
